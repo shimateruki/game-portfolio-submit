@@ -10,7 +10,7 @@ window.PORTFOLIO_DATA = {
     "documentUrl": "documents/portfolio.pdf",
     "description": "ゲームの制作作品・担当箇所・取り組みを紹介しています。作品別の紹介ページ、プレイ動画、ゲームの配布情報、ポートフォリオPDFを掲載。",
     "heroLines": [
-      "制作作品"
+      "ゲームプログラマー志望"
     ],
     "intro": "個人制作・チーム制作のゲームと、\n各作品で担当した内容を紹介します。",
     "about": "誰が使っても直観的に操作でき、使いやすいと感じられるツールやエディターの制作を意識しています。ゲームでも不自由なく遊べるよう、親切な設計を心がけています。",
@@ -52,6 +52,7 @@ window.PORTFOLIO_DATA = {
       "team": "1名",
       "role": "全部",
       "cover": "assets/slime-title.webp",
+      "heroImage": "assets/slime-game.webp",
       "summary": "さまざまなギミックや敵が登場する、ステージクリア型の3Dアクションゲーム。シェーダーを使った表現や演出にこだわりました。",
       "highlights": [],
       "tags": [
@@ -100,6 +101,7 @@ window.PORTFOLIO_DATA = {
       "team": "4名",
       "role": "エンジン・ゲームクリア・ゲームオーバー",
       "cover": "assets/failure-game.webp",
+      "heroImage": "assets/failure-game.webp",
       "summary": "剣・回避・ロックオンを使い、装甲ブロックで守られたボスを倒す3Dアクション。演出やエフェクトによる世界観づくりにこだわりました。",
       "highlights": [],
       "tags": [

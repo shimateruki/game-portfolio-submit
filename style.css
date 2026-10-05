@@ -21,3 +21,28 @@ dialog.lightbox{color:var(--ink);background:#111912;border:1px solid #58734b;bor
 @media print{.site-header,.site-footer,.preview-note,.menu-toggle,.toc,.project-bottom-nav,.zoom-label,.gallery-thumbs,.movie-stage{display:none!important}:root{--ink:#111;--muted:#333;--soft:#222;--bg:#fff;--panel:#fff;--line:#bbb;--accent:#234a1b}body{font-size:11pt}.wrap{width:100%}.project-layout{display:block}.project-sidebar{position:static}.feature,.project-card,.side-info{break-inside:avoid}.project-grid{grid-template-columns:1fr 1fr}.button{color:#111}.home-intro{padding:10px 0}.project-sidebar{margin-top:20px}}
 
 .actions:empty{display:none}
+
+/* Top page: show the two selected games immediately, using their own screenshots. */
+.home-intro{display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);align-items:center;gap:42px;padding:47px 0 42px;margin-bottom:37px}
+.home-intro-copy{min-width:0}
+.home-intro h1{font-size:clamp(34px,3.7vw,48px);line-height:1.34;margin-bottom:18px}
+.home-intro .lead{max-width:34em}
+.intro-aside{max-width:none;align-self:auto;padding:0;margin-top:25px}
+.intro-aside .stack{margin-bottom:19px}
+.home-intro-actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px 21px}
+.home-intro-actions .text-link{margin-left:2px}
+.hero-projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;min-width:0}
+.hero-project{display:block;min-width:0;border:1px solid #4b5e48;border-radius:10px;background:var(--panel);overflow:hidden;transition:border-color .18s,transform .18s}
+.hero-project:hover{border-color:var(--accent);transform:translateY(-2px)}
+.hero-project-media{display:block;aspect-ratio:16/9;background:#0c110e;overflow:hidden}
+.hero-project-media img{width:100%;height:100%;object-fit:contain}
+.hero-project-info{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:3px 8px;min-height:77px;padding:11px 14px 12px}
+.hero-project-number{grid-column:1/-1;color:var(--accent);font:10px/1.5 var(--mono);letter-spacing:.08em}
+.hero-project-info strong{font-size:15px;line-height:1.45}
+.hero-project-info .arrow{color:var(--accent)}
+.feature-rank{color:var(--accent);font:11px/1.6 var(--mono);letter-spacing:.08em;margin-bottom:7px}
+@media(max-width:1100px){.home-intro{gap:28px}.hero-project-info{padding:10px 11px}.hero-project-info strong{font-size:13px}}
+@media(max-width:850px){.home-intro{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:20px}.home-intro h1{font-size:37px}.hero-projects{gap:8px}.hero-project-info{min-height:72px}.hero-project-info strong{font-size:12px}}
+@media(max-width:700px){.home-intro{display:block;padding:30px 0 29px;margin-bottom:29px}.home-intro h1{font-size:clamp(30px,7vw,38px)}.intro-aside{margin-top:18px}.intro-aside .label{display:block}.intro-aside .stack{margin-bottom:15px}.intro-aside .text-link{display:inline-flex}.hero-projects{margin-top:28px;gap:10px}.hero-project-info strong{font-size:13px}.hero-project-info{min-height:73px}.section-head>p{display:none}}
+@media(max-width:450px){.home-intro-actions .button{min-height:43px;padding:9px 14px;font-size:12px}.home-intro-actions .text-link{font-size:12px}.hero-projects{gap:8px}.hero-project-info{padding:8px;min-height:66px}.hero-project-info strong{font-size:12px}.hero-project-number{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.hero-project:hover{transform:none}}
