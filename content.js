@@ -111,7 +111,8 @@ window.PORTFOLIO_DATA = {
         "PBR"
       ],
       "learning": "この作品では、本格的なエディター制作に取り組みました。分かりやすく直観的に扱えることを意識し、エフェクト用のエディターを制作しました。\n\nPBRシェーダーを使ったさび表現など、それまで経験のなかった表現にも挑戦しました。",
-      "videoUrl": "",
+      "videoUrl": "media/failure.mp4",
+      "hoverVideo": "media/failure-preview.mp4",
       "sourceUrl": "",
       "documentUrl": "",
       "downloadUrl": "",
@@ -168,7 +169,8 @@ window.PORTFOLIO_DATA = {
         "チュートリアル"
       ],
       "learning": "",
-      "videoUrl": "",
+      "videoUrl": "media/collectiall.mp4",
+      "hoverVideo": "media/collectiall-preview.mp4",
       "sourceUrl": "",
       "documentUrl": "",
       "downloadUrl": "",
@@ -212,7 +214,8 @@ window.PORTFOLIO_DATA = {
         "制作支援"
       ],
       "learning": "ステージを効率よく作るために、imguigizumoを実装しました。配置情報をjsonで保存することで、ステージ制作やギミック配置の効率化につなげました。",
-      "videoUrl": "",
+      "videoUrl": "media/marble.mp4",
+      "hoverVideo": "media/marble-preview.mp4",
       "sourceUrl": "",
       "documentUrl": "",
       "downloadUrl": "",
@@ -269,7 +272,8 @@ window.PORTFOLIO_DATA = {
         "kamataエンジン"
       ],
       "learning": "",
-      "videoUrl": "",
+      "videoUrl": "media/slime-run.mp4",
+      "hoverVideo": "media/slime-run-preview.mp4",
       "sourceUrl": "",
       "documentUrl": "",
       "downloadUrl": "",
@@ -317,7 +321,8 @@ window.PORTFOLIO_DATA = {
         "エディター"
       ],
       "learning": "ボスのアニメーション確認や攻撃力調整のためのツールを制作。デバッグや調整の効率が上がり、ツールの重要性に気づいた制作でした。",
-      "videoUrl": "",
+      "videoUrl": "media/funnel.mp4",
+      "hoverVideo": "media/funnel-preview.mp4",
       "sourceUrl": "",
       "documentUrl": "",
       "downloadUrl": "",
@@ -365,7 +370,8 @@ window.PORTFOLIO_DATA = {
         "自作エンジン"
       ],
       "learning": "初めて自作エンジンでゲームを制作した作品。便利なツールや軽量化処理など、自分のエンジンに足りない部分を学びました。",
-      "videoUrl": "",
+      "videoUrl": "media/space.mp4",
+      "hoverVideo": "media/space-preview.mp4",
       "sourceUrl": "",
       "documentUrl": "",
       "downloadUrl": "",
@@ -456,7 +462,8 @@ window.PORTFOLIO_DATA = {
         "画面実装"
       ],
       "learning": "",
-      "videoUrl": "",
+      "videoUrl": "media/hop-step.mp4",
+      "hoverVideo": "media/hop-step-preview.mp4",
       "sourceUrl": "",
       "documentUrl": "",
       "downloadUrl": "",
@@ -499,7 +506,8 @@ window.PORTFOLIO_DATA = {
         "10日間制作"
       ],
       "learning": "",
-      "videoUrl": "",
+      "videoUrl": "media/spider.mp4",
+      "hoverVideo": "media/spider-preview.mp4",
       "sourceUrl": "",
       "documentUrl": "",
       "downloadUrl": "",
