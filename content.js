@@ -403,7 +403,7 @@ window.PORTFOLIO_DATA = {
     {
       "id": "td2",
       "visible": true,
-      "title": "TD2 2回目",
+      "title": "シャドウレリック",
       "category": "team",
       "genre": "",
       "engine": "",
@@ -419,7 +419,8 @@ window.PORTFOLIO_DATA = {
         "チュートリアル"
       ],
       "learning": "",
-      "videoUrl": "",
+      "videoUrl": "media/shadow-relic.mp4",
+      "hoverVideo": "media/shadow-relic-preview.mp4",
       "sourceUrl": "",
       "documentUrl": "",
       "downloadUrl": "",
