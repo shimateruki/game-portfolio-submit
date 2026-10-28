@@ -22,6 +22,7 @@
   let route, currentGallery = [], galleryIndex = 0, zoomIndex = 0, zoomFocus = null, pdfBlob = '';
   let lastHash = location.hash;
   const previewScroll = new Map();
+  let stopExhibition = () => {};
 
   function safeUrl(value) {
     if (typeof value !== 'string' || !value.trim()) return '';
@@ -117,10 +118,10 @@
     return `<nav class="${cls}" ${cls==='mobile-nav' ? 'id="mobile-nav" hidden' : ''} aria-label="${cls==='mobile-nav' ? 'モバイルメニュー' : 'メインメニュー'}">${[['works','制作作品'],['downloads','ダウンロード'],['profile','プロフィール'],['resources','作品資料']].map(([v,t])=>`<a href="${href(v)}"${active===v ? ' aria-current="page"' : ''}>${t}</a>`).join('')}</nav>`;
   }
   function header(active) {
-    return `${preview ? '<div class="preview-note">確認用HTML ／ 公開用ZIPでは、各作品が独立したページになっています。</div>' : ''}<a class="skip" href="${sectionHref('main')}">本文へスキップ</a><header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('home')}" aria-label="トップへ"><span class="brand-mark" aria-hidden="true">&lt;/&gt;</span><span><strong>${esc(site.name || '作品紹介')}</strong><small>${esc(site.role || 'ゲームプログラマー志望')}</small></span></a>${nav(active)}<button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="メニューを開く"><span>メニュー</span><span class="menu-lines" aria-hidden="true"><i></i><i></i></span></button></div>${nav(active,'mobile-nav')}</header>`;
+    return `${preview ? '<div class="preview-note">確認用HTML ／ 公開用ZIPでは、各作品が独立したページになっています。</div>' : ''}<a class="skip" href="${sectionHref('main')}">本文へスキップ</a><header class="site-header"><div class="wrap header-inner"><a class="brand" href="${href('home')}" aria-label="トップへ"><span class="brand-mark" aria-hidden="true">遊</span><span><strong>ゲーム制作の記録</strong><small>作品と実装のポートフォリオ</small></span></a>${nav(active)}<button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="メニューを開く"><span>メニュー</span><span class="menu-lines" aria-hidden="true"><i></i><i></i></span></button></div>${nav(active,'mobile-nav')}</header>`;
   }
   function footer() {
-    return `<footer class="site-footer"><div class="wrap"><div class="footer-top"><a href="${href('home')}" class="footer-brand">${esc(site.name || '作品紹介')}</a><nav class="footer-links" aria-label="フッターメニュー"><a href="${href('works')}">制作作品</a><a href="${href('downloads')}">ダウンロード</a><a href="${href('profile')}">プロフィール</a><a href="${href('resources')}">作品資料</a></nav></div><div class="footer-bottom"><p>掲載しているゲーム画面・素材の権利は、それぞれの権利者に帰属します。</p><span>GAME DEVELOPMENT / PORTFOLIO</span></div></div></footer>`;
+    return `<footer class="site-footer"><div class="wrap"><div class="footer-top"><a href="${href('home')}" class="footer-brand">ゲーム制作の記録</a><nav class="footer-links" aria-label="フッターメニュー"><a href="${href('works')}">制作作品</a><a href="${href('downloads')}">ダウンロード</a><a href="${href('profile')}">プロフィール</a><a href="${href('resources')}">作品資料</a></nav></div><div class="footer-bottom"><p>掲載しているゲーム画面・素材の権利は、それぞれの権利者に帰属します。</p><span>個人制作・チーム制作</span></div></div></footer>`;
   }
   function breadcrumbs(label, project = false) {
     return `<nav class="breadcrumbs" aria-label="現在位置"><a href="${href('home')}">トップ</a><i aria-hidden="true">/</i>${project ? `<a href="${href('works')}">制作作品</a><i aria-hidden="true">/</i>` : ''}<b aria-current="page">${esc(label)}</b></nav>`;
@@ -129,7 +130,8 @@
     return `<div class="wrap page-top">${breadcrumbs(title)}<h1 class="page-heading">${esc(title)}</h1>${lead ? `<p class="page-lead">${esc(lead)}</p>` : ''}</div>`;
   }
   function featured(p, i) {
-    return `<article class="feature"><a class="feature-media" href="${toProject(p)}" aria-label="${esc(p.title)}の作品詳細を見る"${hoverVideoAttr(p)}>${projectImage(p,p.cover,p.title+'のゲーム画面',i===0)}<span class="image-arrow" aria-hidden="true">→</span></a><div class="feature-copy"><div class="feature-meta"><span class="kind">${category(p)}</span><span>${[p.team,p.period].filter(Boolean).map(esc).join(' / ')}</span></div><p class="feature-rank">おすすめ作品 ${String(i+1).padStart(2,'0')}</p><h3><a href="${toProject(p)}">${esc(p.title)}</a></h3><p class="feature-summary">${esc(p.tagline || p.summary)}</p>${p.role ? `<div class="feature-role"><span class="role-label">担当箇所</span><div class="stack">${roleTags(p)}</div></div>` : ''}${p.genre || p.engine ? `<div class="stack tags">${[p.genre,p.engine].filter(Boolean).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}<div class="feature-foot"><a class="button primary" href="${toProject(p)}">作品詳細を見る ${arrow}</a>${parseVideo(p.videoUrl) ? `<a class="text-link" href="${toProject(p,'video')}">動画</a>` : ''}${getDownload(p) ? `<a class="text-link" href="${toProject(p,'download')}">ダウンロード ↓</a>` : ''}</div></div></article>`;
+    const still=i===0 && p.heroImage ? p.heroImage : p.cover;
+    return `<article class="feature world-panel" data-work="${esc(p.id)}"><div class="feature-inner wrap"><span class="feature-number" aria-hidden="true">${String(i+1).padStart(2,'0')}</span><a class="feature-media" href="${toProject(p)}" aria-label="${esc(p.title)}の作品詳細を見る"${hoverVideoAttr(p)}>${projectImage(p,still,p.title+'のゲーム画面',i===0)}<span class="image-arrow" aria-hidden="true">→</span></a><div class="feature-copy"><div class="feature-meta"><span class="kind">${category(p)}</span><span>${[p.team,p.period].filter(Boolean).map(esc).join(' / ')}</span></div><p class="feature-rank">おすすめ作品 ${String(i+1).padStart(2,'0')}</p><h3><a href="${toProject(p)}">${esc(p.title)}</a></h3><p class="feature-summary">${esc(p.tagline || p.summary)}</p>${p.role ? `<div class="feature-role"><span class="role-label">担当箇所</span><div class="stack">${roleTags(p)}</div></div>` : ''}${p.genre || p.engine ? `<div class="stack tags">${[p.genre,p.engine].filter(Boolean).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}<div class="feature-foot"><a class="button primary" href="${toProject(p)}">作品詳細を見る ${arrow}</a>${parseVideo(p.videoUrl) ? `<a class="text-link" href="${toProject(p,'video')}">動画</a>` : ''}${getDownload(p) ? `<a class="text-link" href="${toProject(p,'download')}">ダウンロード ↓</a>` : ''}</div></div></div></article>`;
   }
   function card(p) {
     return `<article class="project-card" data-project-id="${esc(p.id)}"><a class="card-image" href="${toProject(p)}" aria-label="${esc(p.title)}の作品詳細を見る"${hoverVideoAttr(p)}>${projectImage(p,p.cover,p.title+'のゲーム画面')}<span class="image-arrow" aria-hidden="true">→</span></a><div class="card-content"><div class="card-kicker"><span class="kind">${category(p)}</span><span>${esc(p.period)}</span></div><h3><a href="${toProject(p)}">${esc(p.title)}</a></h3><p class="card-summary">${esc(p.tagline || p.summary)}</p>${p.role ? `<p class="card-role"><b>担当</b><span>${esc(role(p,true))}</span></p>` : ''}<a class="card-more" href="${toProject(p)}" aria-label="${esc(p.title)}の作品詳細を見る">作品詳細を見る ${arrow}</a></div></article>`;
@@ -137,8 +139,16 @@
   function renderHome() {
     const picks=[...new Set(list(site.spotlightProjects))].map(byId).filter(Boolean).slice(0,2);
     const others=projects.filter(p=>!picks.includes(p) && p.showcase!==false);
-    const heroProjects=picks.map((p,i)=>`<a class="hero-project" href="${toProject(p)}" aria-label="おすすめ作品 ${i+1}、${esc(p.title)}の詳細を見る"${hoverVideoAttr(p)}><span class="hero-project-media">${projectImage(p,p.heroImage || p.cover,p.title+'のプレイ画面',true)}</span><span class="hero-project-info"><span class="hero-project-number">おすすめ作品 ${String(i+1).padStart(2,'0')}</span><strong>${esc(p.title)}</strong><span class="arrow" aria-hidden="true">→</span></span></a>`).join('');
-    return `<main class="wrap fade-in" id="main" tabindex="-1"><section class="home-intro" aria-labelledby="home-title"><div class="home-intro-copy"><p class="eyebrow">ゲームプログラマー志望</p><h1 id="home-title">${list(site.heroLines).map(esc).join('<br>') || 'ゲーム開発ポートフォリオ'}</h1><p class="lead preline">${esc(site.intro)}</p><div class="intro-aside"><p class="label">使用言語・制作環境</p><div class="stack">${list(site.coreSkills).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div><div class="home-intro-actions"><a class="button primary" href="${sectionHref('featured')}">おすすめ作品を見る ${arrow}</a><a class="text-link" href="${href('profile')}">プロフィール ${arrow}</a></div></div></div>${heroProjects ? `<div class="hero-projects" aria-label="おすすめ作品">${heroProjects}</div>` : ''}</section>${picks.length ? `<section aria-labelledby="featured-title" id="featured"><div class="section-head"><h2 class="section-label" id="featured-title">おすすめ作品</h2><p>スライムの大冒険 / いつまでも失敗作</p></div><div class="featured-list">${picks.map(featured).join('')}</div></section>` : ''}<section class="other-section" aria-labelledby="other-title"><div class="section-head"><h2 id="other-title">${picks.length ? 'その他の制作作品' : '制作作品'}</h2><a class="text-link" href="${href('works')}">すべての作品（${projects.length}） ${arrow}</a></div><div class="project-grid home-project-grid">${others.map(card).join('') || '<p class="muted">作品一覧から、掲載中の作品をご覧いただけます。</p>'}</div></section><div class="home-bottom"><p>動画・配布情報は、各作品の詳細ページに掲載しています。</p><div class="actions"><a class="text-link" href="${href('downloads')}">ダウンロード一覧 ${arrow}</a><a class="text-link" href="${href('resources')}">作品資料 ${arrow}</a></div></div></main>`;
+    const first=picks[0];
+    return `<main class="home-page" id="main" tabindex="-1">
+      <div class="soft-landscape"><canvas class="soft-canvas" aria-hidden="true"></canvas><section class="play-intro wrap" aria-labelledby="home-title">
+        <div class="intro-copy"><p class="intro-label">ゲーム制作のポートフォリオ</p><h1 id="home-title">制作作品と、<br>その中の<span>工夫。</span></h1><p class="intro-description">${esc(site.intro)}</p><div class="intro-actions"><a class="button primary" href="#featured">おすすめ作品を見る ↓</a><a class="text-link" href="${href('profile')}">プロフィール ${arrow}</a></div><button class="intro-replay" type="button" data-replay-intro>ロード演出をもう一度見る</button></div>
+        ${first ? `<a class="hero-window" href="${toProject(first)}" aria-label="${esc(first.title)}の作品詳細を見る"><span class="hero-window-image">${image(first.cover,first.title+'のタイトル画面',true)}</span><span class="hero-window-caption"><small>個人制作の作品から</small><strong>${esc(first.title)}</strong><span aria-hidden="true">↗</span></span></a>` : ''}
+      </section><div class="landscape-cue wrap"><span aria-hidden="true" class="landscape-cue-line"></span><span>下へ進むと、作品の世界が切り替わります。</span></div></div>
+      ${picks.length ? `<section class="exhibition" aria-labelledby="featured-title" id="featured"><div class="exhibition-heading wrap"><div class="section-head"><div><p class="section-note">まずは、この2作品から。</p><h2 id="featured-title">おすすめ作品<span class="count-mark">02</span></h2></div><p>ゲームの内容と担当箇所を紹介します。</p></div></div><div class="featured-list">${picks.map((p,i)=>`${i ? '<div class="world-bridge" aria-hidden="true"></div>' : ''}${featured(p,i)}`).join('')}</div></section>` : ''}
+      <section class="wrap other-section" aria-labelledby="other-title"><div class="section-head"><div><p class="section-note">まだまだ、制作の記録。</p><h2 id="other-title">その他の制作作品</h2></div><a class="text-link" href="${href('works')}">全${projects.length}作品を見る ${arrow}</a></div><div class="project-grid home-project-grid">${others.map(card).join('')}</div></section>
+      <div class="wrap home-bottom"><p>動画・配布情報は、各作品の詳細ページに掲載しています。</p><div class="actions"><a class="text-link" href="${href('downloads')}">ダウンロード一覧 ${arrow}</a><a class="text-link" href="${href('resources')}">作品資料 ${arrow}</a></div></div>
+    </main>`;
   }
   function renderWorks() {
     return `<main id="main" class="fade-in" tabindex="-1">${pageTop('制作作品','個人制作・チーム制作のゲームをまとめています。作品を選ぶと、概要と担当箇所を確認できます。')}<section class="wrap catalog" aria-label="作品一覧"><div class="catalog-toolbar"><div class="filters" role="group" aria-label="制作形態で絞り込み">${[['all','すべて'],['solo','個人制作'],['team','チーム制作']].map(([v,t])=>`<button class="filter" type="button" data-filter="${v}" aria-pressed="${v==='all'}">${t}</button>`).join('')}</div><div class="catalog-controls"><label class="search-box"><span aria-hidden="true">⌕</span><input type="search" id="work-search" aria-label="作品名・担当箇所で検索" placeholder="作品名・担当箇所で検索"></label><p id="result-count" class="result-count" role="status">${projects.length}作品</p></div></div><div class="project-grid" id="catalog-grid">${projects.map(card).join('')}</div></section></main>`;
@@ -185,17 +195,29 @@
   }
   function renderDownloads() {
     const ps=projects.filter(p=>p.showDownload!==false), ready=ps.filter(getDownload).length;
-    return `<main id="main" class="fade-in" tabindex="-1">${pageTop('ゲームのダウンロード','各作品の配布状況と、対応環境・起動方法を確認できます。')}<section class="wrap download-list-page" aria-label="ゲームの配布一覧"><div class="download-list-summary"><p>${ready ? '起動方法と注意事項は、各作品の詳細ページをご覧ください。' : '現在、ゲーム本体の配布リンクは準備中です。作品紹介は引き続きご覧いただけます。'}</p><strong>配布リンク：${ready}作品</strong></div>${ps.map(p=>`<article class="download-row"><a class="download-row-cover" href="${toProject(p)}" aria-label="${esc(p.title)}の作品詳細を見る">${image(p.cover,p.title+'のゲーム画面')}</a><div><span class="kind">${category(p)}</span><h2><a href="${toProject(p)}">${esc(p.title)}</a></h2><p class="download-row-info">${[p.downloadPlatform,p.downloadVersion ? 'Version '+p.downloadVersion : '',p.downloadSize].filter(Boolean).map(esc).join(' / ') || esc(p.genre || p.engine || '')}</p></div><div class="download-row-action">${getDownload(p) ? downloadButton(p,'button primary sm') : state(p)}<a class="text-link" href="${toProject(p,'download')}">作品詳細を見る ${arrow}</a></div></article>`).join('') || '<p class="empty-note">現在、ダウンロード情報を掲載している作品はありません。</p>'}</section></main>`;
+    return `<main id="main" class="fade-in" tabindex="-1">${pageTop('ゲームのダウンロード','各作品の配布状況と、対応環境・起動方法を確認できます。')}<section class="wrap download-list-page" aria-label="ゲームの配布一覧"><div class="download-list-summary"><p>${ready ? '起動方法と注意事項は、各作品の詳細ページをご覧ください。' : '現在、ゲーム本体の配布リンクは準備中です。作品紹介は引き続きご覧いただけます。'}</p><strong>配布リンク：${ready}作品</strong></div>${ps.map(p=>`<article class="download-row"><a class="download-row-cover" href="${toProject(p)}" aria-label="${esc(p.title)}の作品詳細を見る">${image(p.cover,p.title+'のゲーム画面')}</a><div><span class="kind">${category(p)}</span><h2><a href="${toProject(p)}">${esc(p.title)}</a></h2><p class="download-row-info">${[p.downloadPlatform,p.downloadVersion ? 'バージョン '+p.downloadVersion : '',p.downloadSize].filter(Boolean).map(esc).join(' / ') || esc(p.genre || p.engine || '')}</p></div><div class="download-row-action">${getDownload(p) ? downloadButton(p,'button primary sm') : state(p)}<a class="text-link" href="${toProject(p,'download')}">作品詳細を見る ${arrow}</a></div></article>`).join('') || '<p class="empty-note">現在、ダウンロード情報を掲載している作品はありません。</p>'}</section></main>`;
+  }
+  // 公式配布画像は色と縦横比を保つ。配布元は assets/skills/sources.json に記録する。
+  const skillIconFiles={
+    'C++':'cpp.png','C#':'csharp.png','DirectX 12':'directx.png',
+    'Visual Studio':'visual-studio.svg','VS Code':'vscode.png',
+    'Blender':'blender.svg','GIMP':'gimp.png','Aseprite':'aseprite.png',
+    'GitHub':'github.svg','Google Sheets':'google-sheets.svg',
+    'Google Slides':'google-slides.svg','Google Docs':'google-docs.svg'
+  };
+  function skillIcon(name) {
+    const file=skillIconFiles[name];
+    return file ? '<img class="skill-icon" src="'+esc(imageUrl('assets/skills/'+file))+'" alt="" aria-hidden="true" width="40" height="40" loading="lazy" decoding="async">' : '';
   }
   function renderProfile() {
     const allSkills=list(site.skills), langs=allSkills.filter(x=>['C++','C#'].includes(x)), graphics=allSkills.filter(x=>x==='DirectX 12'), tools=allSkills.filter(x=>!langs.includes(x)&&!graphics.includes(x));
     const email=typeof site.email==='string' && /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(site.email) ? site.email : '';
-    return `<main id="main" class="fade-in" tabindex="-1">${pageTop('プロフィール')}<div class="wrap profile-layout"><div><section class="profile-block">${site.name ? `<h2 class="profile-name">${esc(site.name)}</h2>` : ''}<p class="profile-role">${esc(site.role || 'ゲームプログラマー志望')}</p>${site.school ? `<p class="profile-school preline">${esc(site.school)}</p>` : ''}<h2>制作で意識していること</h2><p class="profile-text preline">${esc(site.about)}</p></section><section class="profile-block"><h2>使用言語・制作環境</h2>${[['言語',langs],['グラフィックス',graphics],['ツール',tools]].filter(([,v])=>v.length).map(([t,ss])=>`<div class="skill-category"><h3>${t}</h3><div class="stack">${ss.map(x=>`<span class="tag">${esc(x)}</span>`).join('')}</div></div>`).join('')}</section>${safeUrl(site.github)||email ? `<section class="profile-block"><h2>連絡先・リンク</h2><div class="actions">${externalLink(site.github,'GitHub','button ghost')}${email ? `<a class="text-link" href="mailto:${esc(email)}">${esc(email)} ↗</a>` : ''}</div></section>` : ''}</div><aside class="profile-aside"><h2>制作作品と担当箇所</h2><p>ゲームの内容と、各作品で取り組んだ実装を作品別のページに掲載しています。</p><div class="actions"><a class="button primary" href="${href('works')}">制作作品を見る ${arrow}</a><a class="text-link" href="${href('resources')}">作品資料を見る ${arrow}</a></div></aside></div></main>`;
+    return `<main id="main" class="fade-in" tabindex="-1">${pageTop('プロフィール')}<div class="wrap profile-layout"><div><section class="profile-block">${site.name ? `<h2 class="profile-name">${esc(site.name)}</h2>` : ''}<p class="profile-role">${esc(site.role || 'ゲームプログラマー志望')}</p>${site.school ? `<p class="profile-school preline">${esc(site.school)}</p>` : ''}<h2>制作で意識していること</h2><p class="profile-text preline">${esc(site.about)}</p></section><section class="profile-block"><h2>使用言語・制作環境</h2>${[['言語',langs],['グラフィックス',graphics],['ツール',tools]].filter(([,v])=>v.length).map(([t,ss])=>`<div class="skill-category"><h3>${t}</h3><ul class="skill-list">${ss.map(x=>`<li class="skill-card">${skillIcon(x)}<span>${esc(x)}</span></li>`).join('')}</ul></div>`).join('')}</section>${safeUrl(site.github)||email ? `<section class="profile-block"><h2>連絡先・リンク</h2><div class="actions">${externalLink(site.github,'GitHub','button ghost')}${email ? `<a class="text-link" href="mailto:${esc(email)}">${esc(email)} ↗</a>` : ''}</div></section>` : ''}</div><aside class="profile-aside"><h2>制作作品と担当箇所</h2><p>ゲームの内容と、各作品で取り組んだ実装を作品別のページに掲載しています。</p><div class="actions"><a class="button primary" href="${href('works')}">制作作品を見る ${arrow}</a><a class="text-link" href="${href('resources')}">作品資料を見る ${arrow}</a></div></aside></div></main>`;
   }
   function renderResources() {
     const hasPDF=Boolean(safeUrl(site.documentUrl));
     const specific=projects.filter(p=>safeUrl(p.documentUrl)||safeUrl(p.sourceUrl));
-    return `<main id="main" class="fade-in" tabindex="-1">${pageTop('作品資料','制作作品と担当箇所をまとめた資料、公開しているソースコードへのリンクです。')}<div class="wrap document-section">${hasPDF ? `<article class="document-card"><div class="document-art">${image('assets/portfolio-cover.webp','ポートフォリオPDFの表紙')}</div><div><span class="eyebrow">PORTFOLIO / PDF</span><h2>ポートフォリオ</h2><p>自己紹介、個人制作作品、チーム制作作品をまとめた資料です。</p><p>Webサイトとは別に、PDF形式で閲覧・保存できます。</p><div class="actions">${externalLink(site.documentUrl,'PDFを開く','button primary')}${externalLink(site.documentUrl,'PDFを保存','button ghost',true)}</div></div></article>` : '<p class="empty-note">現在、ポートフォリオ資料のリンクは掲載していません。</p>'}${specific.length ? `<section class="resource-group"><h2>作品ごとの関連資料</h2>${specific.map(p=>`<article class="resource-row"><div><h3>${esc(p.title)}</h3><p>${esc(role(p,true))}</p></div><div class="actions">${externalLink(p.documentUrl,'資料','button ghost sm')}${externalLink(p.sourceUrl,'コード','button ghost sm')}</div></article>`).join('')}</section>` : ''}${safeUrl(site.github) ? `<section class="resource-group"><h2>公開リンク</h2><div class="resource-row"><div><h3>GitHub</h3><p>公開しているリポジトリ</p></div>${externalLink(site.github,'GitHubを開く','button ghost')}</div></section>` : ''}</div></main>`;
+    return `<main id="main" class="fade-in" tabindex="-1">${pageTop('作品資料','制作作品と担当箇所をまとめた資料、公開しているソースコードへのリンクです。')}<div class="wrap document-section">${hasPDF ? `<article class="document-card"><div class="document-art">${image('assets/portfolio-cover.webp','ポートフォリオPDFの表紙')}</div><div><span class="eyebrow">作品資料 / PDF</span><h2>ポートフォリオ</h2><p>自己紹介、個人制作作品、チーム制作作品をまとめた資料です。</p><p>このサイトとは別に、PDF形式で閲覧・保存できます。</p><div class="actions">${externalLink(site.documentUrl,'PDFを開く','button primary')}${externalLink(site.documentUrl,'PDFを保存','button ghost',true)}</div></div></article>` : '<p class="empty-note">現在、ポートフォリオ資料のリンクは掲載していません。</p>'}${specific.length ? `<section class="resource-group"><h2>作品ごとの関連資料</h2>${specific.map(p=>`<article class="resource-row"><div><h3>${esc(p.title)}</h3><p>${esc(role(p,true))}</p></div><div class="actions">${externalLink(p.documentUrl,'資料','button ghost sm')}${externalLink(p.sourceUrl,'コード','button ghost sm')}</div></article>`).join('')}</section>` : ''}${safeUrl(site.github) ? `<section class="resource-group"><h2>公開リンク</h2><div class="resource-row"><div><h3>GitHub</h3><p>公開しているリポジトリ</p></div>${externalLink(site.github,'GitHubを開く','button ghost')}</div></section>` : ''}</div></main>`;
   }
   function renderNotFound() { return `<main id="main" class="wrap page-top" tabindex="-1">${breadcrumbs('作品が見つかりません')}<h1>作品が見つかりません</h1><p class="page-lead">指定した作品は現在掲載されていません。制作作品一覧からご確認ください。</p><p style="margin:30px 0 70px"><a class="button primary" href="${href('works')}">制作作品一覧 ${arrow}</a></p></main>`; }
   function lightboxHTML() { return '<dialog class="lightbox" id="lightbox" aria-labelledby="lightbox-caption"><div class="lightbox-toolbar"><span id="lightbox-count" class="eyebrow"></span><button type="button" class="close-button" data-close-zoom aria-label="拡大画像を閉じる">閉じる ×</button></div><div id="lightbox-image" class="lightbox-image"></div><div class="lightbox-bottom"><button class="icon-button" type="button" data-zoom-prev aria-label="前の画像">←</button><p id="lightbox-caption"></p><button class="icon-button" type="button" data-zoom-next aria-label="次の画像">→</button></div></dialog>'; }
@@ -209,6 +231,8 @@
     return {view:document.body.dataset.page || 'home',id:document.body.dataset.project || new URLSearchParams(location.search).get('id') || '',section:location.hash.slice(1)};
   }
   function render() {
+    stopExhibition();
+    stopExhibition = () => {};
     route=getRoute();
     let view=route.view, content='', title='';currentGallery=[];
     if (view==='home') {content=renderHome();title=site.title || '制作作品';}
@@ -218,13 +242,144 @@
     else if (view==='resources') {content=renderResources();title='作品資料';}
     else if (view==='project' && byId(route.id)) {content=renderProject(byId(route.id));title=byId(route.id).title;}
     else {content=renderNotFound();title='作品が見つかりません';}
-    document.title=view==='home' ? title : title+' | '+(site.name || '作品紹介');
+    document.title=view==='home' ? title : title+' | ゲーム制作の記録';
     const desc=$('meta[name="description"]');if(desc)desc.content=view==='project' ? byId(route.id)?.summary || '' : site.description || '';
     app.innerHTML=header(['home','project'].includes(view)?'works':view)+content+footer()+lightboxHTML();
     const box=$('#lightbox');
     box.addEventListener('cancel',e=>{e.preventDefault();closeZoom();});
     box.addEventListener('click',e=>{if(e.target!==box)return;const r=box.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeZoom();});
     if(view==='works')$('#work-search').addEventListener('input',filterWorks);
+    stopExhibition=initExhibition();
+  }
+  // 画面から完全に離れた要素は待機状態へ戻し、再入場でも演出する。
+  // 動きを減らす設定と停止ボタンでは、内容を常に表示する。
+  function initExhibition() {
+    const main=$('main');
+    if(!main)return ()=>{};
+    const targets=[...main.querySelectorAll('.feature-inner .feature-media,.feature-inner .feature-copy,.project-card,.profile-block,.detail-section,.download-row,.document-card,.section-head')];
+    const landscape=initSoftLandscape();
+    const worlds=initWorldPanels();
+    let observer;
+    const update=()=>{
+      observer?.disconnect();
+      const enabled=!reduced.matches;
+      main.classList.toggle('motion-ready',enabled);
+      main.classList.toggle('motion-paused',!enabled);
+      landscape.setEnabled(enabled);
+      worlds.setEnabled(enabled);
+      targets.forEach(el=>{el.dataset.reveal='';el.classList.add('is-visible');});
+      if(enabled&&'IntersectionObserver' in window){
+        observer=new IntersectionObserver(entries=>{
+          for(const entry of entries)entry.target.classList.toggle('is-visible',entry.isIntersecting);
+        },{threshold:0,rootMargin:'0px 0px -16px 0px'});
+        targets.forEach(el=>observer.observe(el));
+      }
+      if(!enabled)main.querySelectorAll('video.hover-preview').forEach(video=>{video.pause();video.closest('[data-hover-video]')?.classList.remove('is-playing');});
+    };
+    reduced.addEventListener('change',update);
+    update();
+    return ()=>{landscape.destroy();worlds.destroy();observer?.disconnect();reduced.removeEventListener('change',update);};
+  }
+  // 背景の輪郭をばねとして計算する。静止中・画面外・非表示タブでは描画を休止する。
+  function initSoftLandscape() {
+    const host=$('.soft-landscape'), canvas=$('.soft-canvas');
+    if(!host||!canvas)return {setEnabled(){},destroy(){}};
+    const ctx=canvas.getContext('2d');
+    if(!ctx)return {setEnabled(){},destroy(){}};
+    const nodes=Array.from({length:49},()=>({y:0,v:0}));
+    let width=1,height=1,enabled=true,visible=true,raf=0,last=0,scrollShift=0;
+    let pointer=null,rings=[];
+    const base=(x,layer=0)=>height*(.68 + .18*Math.sin(x/width*4.7+.5+layer*.4)) + layer*36;
+    const curve=(layer=0)=>{
+      ctx.beginPath();ctx.moveTo(-5,height+5);ctx.lineTo(-5,base(0,layer)+nodes[0].y);
+      for(let i=0;i<nodes.length;i++){
+        const x=i/(nodes.length-1)*width,y=base(x,layer)+nodes[i].y*(1-layer*.2)+scrollShift;
+        if(i===0)ctx.lineTo(x,y);else{const px=(i-1)/(nodes.length-1)*width,py=base(px,layer)+nodes[i-1].y*(1-layer*.2)+scrollShift;ctx.quadraticCurveTo(px,py,(x+px)/2,(y+py)/2);}
+      }
+      ctx.lineTo(width+5,base(width,layer)+nodes.at(-1).y+scrollShift);ctx.lineTo(width+5,height+5);ctx.closePath();
+    };
+    const paint=()=>{
+      ctx.clearRect(0,0,width,height);
+      curve(0);ctx.fillStyle='#dbe6d0';ctx.fill();ctx.strokeStyle='#a9c5ad';ctx.lineWidth=1;ctx.stroke();
+      curve(1);ctx.fillStyle='#c9dccc';ctx.fill();
+      curve(2);ctx.fillStyle='#b7d0c6';ctx.fill();
+      ctx.save();curve(0);ctx.clip();
+      for(const ring of rings){const t=ring.age/1.5;ctx.strokeStyle='rgba(47,103,87,'+((1-t)*.48)+')';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(ring.x,ring.y,12+t*210,7+t*95,0,0,Math.PI*2);ctx.stroke();}
+      ctx.restore();
+    };
+    const tick=now=>{
+      raf=0;const dt=Math.min((now-(last||now-16))/1000,.032);last=now;let energy=0;
+      nodes.forEach((node,i)=>{
+        const x=i/(nodes.length-1)*width;
+        const near=pointer?Math.exp(-Math.pow((x-pointer.x)/135,2))*Math.exp(-Math.pow((base(x)-pointer.y)/190,2)):0;
+        const target=near*65;
+        node.v+=(target-node.y)*65*dt;node.v*=Math.exp(-7*dt);node.y+=node.v*dt;
+        energy+=Math.abs(node.v)+Math.abs(target-node.y);
+      });
+      rings.forEach(r=>r.age+=dt);rings=rings.filter(r=>r.age<1.5);paint();
+      if(energy>.08||rings.length)wake();
+    };
+    function wake(){if(enabled&&visible&&!document.hidden&&!raf)raf=requestAnimationFrame(tick);}
+    const coordinates=e=>{const r=host.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top};};
+    const move=e=>{if(!enabled||e.pointerType==='touch')return;pointer=coordinates(e);wake();};
+    const leave=()=>{pointer=null;wake();};
+    const press=e=>{
+      if(!enabled||e.target.closest('a,button,input'))return;
+      const p=coordinates(e);rings.push({...p,age:0});rings=rings.slice(-6);
+      nodes.forEach((node,i)=>{node.v+=-240*Math.exp(-Math.pow((i/(nodes.length-1)*width-p.x)/170,2));});wake();
+    };
+    const scroll=()=>{if(!enabled||!visible)return;scrollShift=Math.sin(Math.max(0,-host.getBoundingClientRect().top)/420)*28;wake();};
+    const resize=()=>{const r=host.getBoundingClientRect();width=r.width;height=r.height;const dpr=Math.min(devicePixelRatio||1,1.5);canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);paint();};
+    const visibility=()=>{last=0;if(document.hidden){cancelAnimationFrame(raf);raf=0;}else wake();};
+    const ro=new ResizeObserver(resize);ro.observe(host);
+    const io=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;last=0;if(!visible){cancelAnimationFrame(raf);raf=0;}else wake();});io.observe(host);
+    host.addEventListener('pointermove',move,{passive:true});host.addEventListener('pointerleave',leave);host.addEventListener('pointerdown',press,{passive:true});window.addEventListener('scroll',scroll,{passive:true});document.addEventListener('visibilitychange',visibility);resize();
+    return {setEnabled(value){enabled=value;last=0;if(!value){cancelAnimationFrame(raf);raf=0;pointer=null;rings=[];scrollShift=0;nodes.forEach(n=>{n.y=0;n.v=0;});paint();}else wake();},destroy(){cancelAnimationFrame(raf);ro.disconnect();io.disconnect();host.removeEventListener('pointermove',move);host.removeEventListener('pointerleave',leave);host.removeEventListener('pointerdown',press);window.removeEventListener('scroll',scroll);document.removeEventListener('visibilitychange',visibility);}};
+  }
+  // 背景の形だけを少し動かす。作品画像と文字は入力に追従させない。
+  function initWorldPanels() {
+    const panels=[...document.querySelectorAll('.world-panel')];
+    if(!panels.length)return {setEnabled(){},destroy(){}};
+    let enabled=true, frame=0;
+    const states=panels.map(panel=>({panel,x:0,move:null,leave:null}));
+    const paint=()=>{
+      frame=0;
+      for(const state of states){
+        const r=state.panel.getBoundingClientRect();
+        if(r.bottom<0||r.top>innerHeight)continue;
+        const travel=Math.max(-14,Math.min(14,(innerHeight/2-r.top-r.height/2)*.025));
+        state.panel.style.setProperty('--world-x',`${state.x}px`);
+        state.panel.style.setProperty('--world-y',`${travel}px`);
+      }
+    };
+    const schedule=()=>{if(enabled&&!frame)frame=requestAnimationFrame(paint);};
+    for(const state of states){
+      state.move=e=>{
+        if(!enabled||e.pointerType==='touch')return;
+        const r=state.panel.getBoundingClientRect();
+        state.x=Math.max(-12,Math.min(12,(e.clientX-r.left-r.width/2)*.025));
+        schedule();
+      };
+      state.leave=()=>{state.x=0;schedule();};
+      state.panel.addEventListener('pointermove',state.move,{passive:true});
+      state.panel.addEventListener('pointerleave',state.leave);
+    }
+    window.addEventListener('scroll',schedule,{passive:true});
+    window.addEventListener('resize',schedule);
+    schedule();
+    return {
+      setEnabled(value){
+        enabled=value;
+        if(!enabled){cancelAnimationFrame(frame);frame=0;states.forEach(({panel})=>{panel.style.setProperty('--world-x','0px');panel.style.setProperty('--world-y','0px');});}
+        else schedule();
+      },
+      destroy(){
+        cancelAnimationFrame(frame);
+        window.removeEventListener('scroll',schedule);
+        window.removeEventListener('resize',schedule);
+        states.forEach(({panel,move,leave})=>{panel.removeEventListener('pointermove',move);panel.removeEventListener('pointerleave',leave);});
+      }
+    };
   }
   function filterWorks() {
     const kind=$('.filter[aria-pressed="true"]')?.dataset.filter || 'all';
@@ -232,6 +387,7 @@
     const ps=projects.filter(p=>(kind==='all'||p.category===kind) && [p.title,p.role,p.roleSummary,p.summary,p.engine,...list(p.tags)].join(' ').toLocaleLowerCase().includes(needle));
     $('#catalog-grid').innerHTML=ps.map(card).join('') || '<p class="catalog-empty">条件に一致する作品はありません。</p>';
     $('#result-count').textContent=ps.length+'作品';
+    stopExhibition();stopExhibition=initExhibition();
   }
   function selectGallery(i) {
     const p=byId(route.id), shots=p ? gallery(p) : [];
@@ -297,7 +453,7 @@
   });
   const hoverCapable = window.matchMedia('(hover: hover) and (pointer: fine)');
   document.addEventListener('pointerover',e=>{
-    if (!hoverCapable.matches || reduced.matches || e.pointerType !== 'mouse' || !(e.target instanceof Element)) return;
+    if ($('main')?.classList.contains('motion-paused') || !hoverCapable.matches || reduced.matches || e.pointerType !== 'mouse' || !(e.target instanceof Element)) return;
     const link=e.target.closest('[data-hover-video]');
     if (!link || link.contains(e.relatedTarget)) return;
     const video=$('video.hover-preview',link);
