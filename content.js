@@ -92,6 +92,31 @@ window.PORTFOLIO_DATA = {
       "recordImages": []
     },
     {
+      "id": "power-plant",
+      "visible": true,
+      "title": "灯りなき発電所と一本の線",
+      "category": "team",
+      "genre": "3Dパズル",
+      "engine": "自作エンジン（C++／DirectX 12）",
+      "period": "10日",
+      "team": "3名",
+      "role": "タイトル・ステージセレクト・チュートリアル・エディター・ゲーム基盤全般・クリア演出",
+      "cover": "assets/power-plant-title.png",
+      "summary": "ライトで暗い発電所を探索し、一本のケーブルで設備に電力を送る3Dパズルゲームです。どの設備に電力を送るか、いつケーブルを外すかを考えながら、出口を目指します。",
+      "learning": "スポットライトにシャドウマップを使い、設備の形に沿った影で立体感が伝わるようにしました。壁が光を遮ることで、照らされた通路と奥の暗がりの境目も分かるようにしています。",
+      "videoUrl": "media/power-plant.mp4",
+      "gallery": [
+        { "src": "assets/power-plant-title.png", "caption": "タイトル画面" },
+        { "src": "assets/power-plant-play.png", "caption": "ケーブルで設備に電力を送るチュートリアル" }
+      ],
+      "recordImages": [
+        { "src": "assets/power-plant-shadow.png", "caption": "設備を照らしたときに落ちる影" },
+        { "src": "assets/power-plant-wall.png", "caption": "壁で光が遮られる通路" }
+      ],
+      "showcase": true,
+      "showDownload": false
+    },
+    {
       "id": "failure",
       "visible": true,
       "title": "いつまでも失敗作",
